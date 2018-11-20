@@ -55,6 +55,7 @@
   <exec_depend>message_runtime</exec_depend>
   <build_depend>message_generation</build_depend>
   <depend>std_msgs</depend>
+  <depend>sensor_msgs</depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->

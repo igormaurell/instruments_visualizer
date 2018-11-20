@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   genmsg
   message_generation
   std_msgs
+  sensor_msgs
 )
 
 find_package (OpenCV REQUIRED)
@@ -34,12 +35,12 @@ generate_messages(
 )
 
 catkin_package(
- LIBRARIES instruments_visualizer
  CATKIN_DEPENDS roscpp message_runtime std_msgs
 )
 
 include_directories(
  lib/CvWorks/Core/Vision
+ lib/CvWorks/Core/FieldVision
  lib/CvWorks/Components/VisionSensors
  lib/CvWorks/Components/VisionImplementationCv
  lib/CvWorks/Libs/CsvUtil
