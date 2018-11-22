@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   std_msgs
   sensor_msgs
+  cv_bridge
 )
 
 find_package (OpenCV REQUIRED)
@@ -35,7 +36,7 @@ generate_messages(
 )
 
 catkin_package(
- CATKIN_DEPENDS roscpp message_runtime std_msgs
+ CATKIN_DEPENDS roscpp message_generation std_msgs sensor_msgs cv_bridge
 )
 
 include_directories(
