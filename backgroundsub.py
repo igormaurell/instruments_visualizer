@@ -2,7 +2,7 @@ import numpy as np
 import cv2 as cv
 from matplotlib import pyplot as plt
 
-img = cv.imread('valvulas/valvula13.jpg')
+img = cv.imread('valvulas/valvula12.jpg')
 
 img_gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
 img_hsv = cv.cvtColor(img, cv.COLOR_BGR2HSV)
@@ -18,7 +18,7 @@ mask_hsv = cv.inRange(img_hsv, min_hsv, max_hsv)
 result_hsv = cv.bitwise_and(img_hsv, img_hsv, mask = mask_hsv)
 result_gray = cv.cvtColor(cv.cvtColor(result_hsv, cv.COLOR_HSV2BGR), cv.COLOR_BGR2GRAY)
 
-ret, th = cv.threshold(result_gray,1,255,cv.THRESH_BINARY)
+_, th = cv.threshold(result_gray,1,255,cv.THRESH_BINARY)
 
 im2, contours, hierarchy = cv.findContours(th, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
 

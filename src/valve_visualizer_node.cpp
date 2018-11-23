@@ -1,6 +1,10 @@
 #include "ros/ros.h"
 
+#include <iostream>
 #include <vector>
+#include <string>
+
+#include <math.h>
 
 #include <opencv2/opencv.hpp>
 
@@ -13,6 +17,8 @@
 #include "instruments_visualizer/VisualizeValve.h"
 
 int NUM_READS = 50;
+
+int OPEN_THRESH = 30;
 
 void readImage(const sensor_msgs::Image::ConstPtr& msg_image, cv::Mat &image)
 {
@@ -98,11 +104,29 @@ bool verifyValveState(cv::Mat& image)
     rect_bod = cv::minAreaRect(contour2);
     cv::Point2f vertices2[4];
     rect_bod.points(vertices2);
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < 4; i++){
         cv::line(img, vertices2[i], vertices2[(i+1)%4], cv::Scalar(0,0,255), 2);
+    }
+
+    double angle_mob, angle_bod;
+
+    if(rect_mob.size.width < rect_mob.size.height)
+        angle_mob = rect_mob.angle - 90;
+    else
+        angle_mob = rect_mob.angle;
+
+    if(rect_bod.size.width < rect_bod.size.height)
+        angle_bod = rect_bod.angle - 90;
+    else
+        angle_bod = rect_bod.angle;
+
+    ROS_INFO("MOB: %lf", angle_mob);
+    ROS_INFO("BOD: %lf", angle_bod);
 
     cv::imshow("image", img);
-    cv::waitKey(0);
+    cv::waitKey(1);
+
+    return (abs(angle_bod - angle_mob) < OPEN_THRESH);
 }
 
 bool visualizeValve(instruments_visualizer::VisualizeValve::Request &req, instruments_visualizer::VisualizeValve::Response &res)
@@ -113,17 +137,19 @@ bool visualizeValve(instruments_visualizer::VisualizeValve::Request &req, instru
 
     cv::Mat image;
 
-    image = cv::imread("/home/igormaurell/Workspace/rcb/catkin_ws/src/instruments_visualizer/valvulas/valvula2.jpg");
-    verifyValveState(image);
-
-    /*for(int i = 0 ; ; i++) {
+    //image = cv::imread("/home/igormaurell/Workspace/rcb/catkin_ws/src/instruments_visualizer/valvulas/valvula2.jpg");
+    //verifyValveState(image);
+    bool open;
+    for(int i = 0 ; ; i++) {
         image_msg = *(ros::topic::waitForMessage<sensor_msgs::Image>("/usb_cam/image_raw", ros::Duration(1))); 
         sensor_msgs::Image::ConstPtr image_const_ptr( new sensor_msgs::Image(image_msg));
         readImage(image_const_ptr, image);
 
-        
+        open = verifyValveState(image);
 
-    }*/
+        std::cout<<open<<std::endl;
+
+    }
 
     return true;
 }
