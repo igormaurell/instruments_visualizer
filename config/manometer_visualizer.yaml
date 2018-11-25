@@ -1,0 +1,23 @@
+num_reads: 50
+debug: true
+
+min_measure: 0.0
+min_measure_angle: 314.0
+
+max_measure: 10.0
+max_measure_angle: 39.1
+
+analog_meter_detector:
+  border_ratio: 0.8
+  resolution: 0.1
+
+  circle_detector:
+    use_gaussian_filter: true
+    gaussian_kernel_size: 5
+
+    dp: 2.0
+    min_dist_div: 4.0
+    hough_param1: 200
+    hough_param2: 300
+    min_radius: 0
+    max_radius: 0

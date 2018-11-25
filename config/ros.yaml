@@ -1,0 +1,11 @@
+subscribers:
+  image_raw:
+    topic: /usb_cam/image_raw
+
+servers:
+  manometer_visualizer:
+    service: /instruments_visualizer/visualize_manometer
+  valve_visualizer:
+    service: /instruments_visualizer/visualize_valve
+  painel_visualizer:
+    service: /instruments_visualizer/visualize_painel
