@@ -18,7 +18,7 @@ ValveDetector vd;
 
 int NUM_READS = 50;
 
-int OPEN_THRESH = 30;
+double OPEN_THRESH = 30.0;
 
 bool DEBUG = true;
 
@@ -132,22 +132,22 @@ int main(int argc, char **argv)
 {
     ros::init(argc, argv, "valve_visualizer_node");
 
-    ros::NodeHandle nh;
+    ros::NodeHandle node_handle;
    
-    std::string manometer_visualizer_service;
+    std::string valve_visualizer_service;
 
-    node_handle.param("/instuments_visualizer/subscribers/image_raw/topic", camera_topic, std::string("/usb_cam/image_raw"));
-    node_handle.param("/instuments_visualizer/servers/valve_visualizer/service", valve_visualizer_service, std::string("/instruments_visualizer/visualize_valve"));
-    node_handle.param("/instuments_visualizer/valve_visualizer/num_reads", NUM_READS, 50);
-    node_handle.param("/instuments_visualizer/valve_visualizer/debug", DEBUG, false);
-    node_handle.param("/instuments_visualizer/valve_visualizer/open_thresh", OPEN_THRESH, (double) 30.0);
-    node_handle.param("/instuments_visualizer/valve_visualizer/valve_detector/mobile_hs", vd.mobile_hs, std::vector{120, 190});
-    node_handle.param("/instuments_visualizer/valve_visualizer/valve_detector/mobile_hs", vd.mobile_hs_thresh, std::vector{90, 30});
-    node_handle.param("/instuments_visualizer/valve_visualizer/valve_detector/use_gaussian_filter", vd.use_gaussian_filter, true);
-    node_handle.param("/instuments_visualizer/valve_visualizer/valve_detector/gaussian_kernel_size", vd.gaussian_kernel_size, 5);
-    node_handle.param("/instuments_visualizer/valve_visualizer/valve_detector/opening_kernel_size", vd.opening_kernel_size, 7);
+    node_handle.param("/instruments_visualizer/subscribers/image_raw/topic", camera_topic, std::string("/usb_cam/image_raw"));
+    node_handle.param("/instruments_visualizer/servers/valve_visualizer/service", valve_visualizer_service, std::string("/instruments_visualizer/visualize_valve"));
+    node_handle.param("/instruments_visualizer/valve_visualizer/num_reads", NUM_READS, 50);
+    node_handle.param("/instruments_visualizer/valve_visualizer/debug", DEBUG, false);
+    node_handle.param("/instruments_visualizer/valve_visualizer/open_thresh", OPEN_THRESH, (double) 30.0);
+    node_handle.param("/instruments_visualizer/valve_visualizer/valve_detector/mobile_hs", vd.mobile_hs, std::vector<int>{120, 190});
+    node_handle.param("/instruments_visualizer/valve_visualizer/valve_detector/mobile_hs_thresh", vd.mobile_hs_thresh, std::vector<int>{90, 30});
+    node_handle.param("/instruments_visualizer/valve_visualizer/valve_detector/use_gaussian_filter", vd.use_gaussian_filter, true);
+    node_handle.param("/instruments_visualizer/valve_visualizer/valve_detector/gaussian_kernel_size", vd.gaussian_kernel_size, 5);
+    node_handle.param("/instruments_visualizer/valve_visualizer/valve_detector/opening_kernel_size", vd.opening_kernel_size, 7);
 
-    ros::ServiceServer service = nh.advertiseService("/instruments_visualizer/visualize_valve", visualizeValve);
+    ros::ServiceServer service = node_handle.advertiseService("/instruments_visualizer/visualize_valve", visualizeValve);
 
     ros::spin();
     return 0;

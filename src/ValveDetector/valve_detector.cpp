@@ -54,17 +54,18 @@ std::pair<cv::RotatedRect, cv::RotatedRect> ValveDetector::detect(const cv::Mat&
     rect_mob = cv::minAreaRect(contour1);
 
     
-    cv::Mat blur, th2, th1_inv, kernel;
-    cv::GaussianBlur(image_gray, blur, cv::Size(5, 5), 0);
+    cv::Mat th2, th1_inv, kernel;
+    if(use_gaussian_filter)
+        cv::GaussianBlur(image_gray, image_gray, cv::Size(gaussian_kernel_size, gaussian_kernel_size), 0);
 
-    cv::threshold(blur, th2, 0, 255, CV_THRESH_OTSU);
+    cv::threshold(image_gray, th2, 0, 255, CV_THRESH_OTSU);
 
     cv::bitwise_not(th2, th2);
 
     cv::bitwise_not(th1, th1_inv);
     cv::bitwise_and(th2, th1_inv, th2);
 
-    kernel = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(11, 11));
+    kernel = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(opening_kernel_size, opening_kernel_size));
     cv::morphologyEx(th2, th2, cv::MORPH_OPEN, kernel);
 
     std::vector<std::vector<cv::Point> > contours2;

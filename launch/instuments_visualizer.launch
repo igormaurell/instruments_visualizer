@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<launch>
+  <!-- Console launch prefix -->
+  <arg name="launch_prefix" default=""/>
+
+  <!-- Load parameters -->
+  <rosparam command="load" ns="instruments_visualizer" file="$(find instruments_visualizer)/config/ros.yaml"/>
+  <rosparam command="load" ns="instruments_visualizer" file="$(find instruments_visualizer)/config/manometer_visualizer.yaml"/>
+  <rosparam command="load" ns="instruments_visualizer" file="$(find instruments_visualizer)/config/valve_visualizer.yaml"/>
+
+  <!-- Start darknet and ros wrapper -->
+  <node pkg="instruments_visualizer" type="manometer_visualizer_node" name="manometer_visualizer" output="screen"/>
+  
+  <node pkg="instruments_visualizer" type="valve_visualizer_node" name="valve_visualizer" output="screen"/>
+
+</launch>

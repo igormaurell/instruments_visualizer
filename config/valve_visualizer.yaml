@@ -1,6 +1,6 @@
 valve_visualizer:
   num_reads: 50
-  debug: false
+  debug: true
   open_thresh: 30
 
   valve_detector:

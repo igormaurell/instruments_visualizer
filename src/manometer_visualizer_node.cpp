@@ -7,7 +7,8 @@
 #include <vector>
 #include <algorithm>
 #include <string>
-#include <algorithmmath.h>
+#include <algorithm>
+#include <math.h>
 
 #include <opencv2/opencv.hpp>
 
@@ -128,30 +129,30 @@ int main(int argc, char **argv)
 {
     ros::init(argc, argv, "manometer_visualizer_node");
     
-    ros::NodeHandle nh;
+    ros::NodeHandle node_handle;
 
     std::string manometer_visualizer_service;
 
-    node_handle.param("/instuments_visualizer/manometer_visualizer/subscribers/image_raw/topic", camera_topic, std::string("/usb_cam/image_raw"));
-    node_handle.param("/instuments_visualizer/manometer_visualizer/servers/manometer_visualizer/service", manometer_visualizer_service, std::string("/instruments_visualizer/visualize_manometer"));
-    node_handle.param("/instuments_visualizer/manometer_visualizer/num_reads", NUM_READS, 50);
-    node_handle.param("/instuments_visualizer/manometer_visualizer/debug", DEBUG, false);
-    node_handle.param("/instuments_visualizer/manometer_visualizer/min_measure", MIN_MEASURE, (double) 0.0);
-    node_handle.param("/instuments_visualizer/manometer_visualizer/min_measure_angle", MIN_MEASURE_ANGLE, (double) 314.0);
-    node_handle.param("/instuments_visualizer/manometer_visualizer/max_measure", MAX_MEASURE, (double) 10.0);
-    node_handle.param("/instuments_visualizer/manometer_visualizer/max_measure_angle", MAX_MEASURE_ANGLE, (double) 39.1);
-    node_handle.param("/instuments_visualizer/manometer_visualizer/analog_meter_detector/border_ratio", amd.border_ratio, (double) 0.8);
-    node_handle.param("/instuments_visualizer/manometer_visualizer/analog_meter_detector/resolution", amd.resolution, (double) 0.1);
-    node_handle.param("/instuments_visualizer/manometer_visualizer/analog_meter_detector/circle_detector/use_gaussian_filter", amd.circle_detector.use_gaussian_filter, true);
-    node_handle.param("/instuments_visualizer/manometer_visualizer/analog_meter_detector/circle_detector/gaussian_kernel_size", amd.circle_detector.gaussian_kernel_size, 5);
-    node_handle.param("/instuments_visualizer/manometer_visualizer/analog_meter_detector/circle_detector/dp", amd.circle_detector.dp, (double) 2.0);
-    node_handle.param("/instuments_visualizer/manometer_visualizer/analog_meter_detector/circle_detector/min_dist_div", amd.circle_detector.min_dist_div, (double)  4.0);
-    node_handle.param("/instuments_visualizer/manometer_visualizer/analog_meter_detector/circle_detector/hough_param1", amd.circle_detector.hough_param1, 200);
-    node_handle.param("/instuments_visualizer/manometer_visualizer/analog_meter_detector/circle_detector/hough_param2", amd.circle_detector.hough_param2, 300);
-    node_handle.param("/instuments_visualizer/manometer_visualizer/analog_meter_detector/circle_detector/min_radius", amd.circle_detector.min_radius, 0);
-    node_handle.param("/instuments_visualizer/manometer_visualizer/analog_meter_detector/circle_detector/max_radius", amd.circle_detector.max_radius, 0);
+    node_handle.param("/instruments_visualizer/manometer_visualizer/subscribers/image_raw/topic", camera_topic, std::string("/usb_cam/image_raw"));
+    node_handle.param("/instruments_visualizer/manometer_visualizer/servers/manometer_visualizer/service", manometer_visualizer_service, std::string("/instruments_visualizer/visualize_manometer"));
+    node_handle.param("/instruments_visualizer/manometer_visualizer/num_reads", NUM_READS, 50);
+    node_handle.param("/instruments_visualizer/manometer_visualizer/debug", DEBUG, false);
+    node_handle.param("/instruments_visualizer/manometer_visualizer/min_measure", MIN_MEASURE, (double) 0.0);
+    node_handle.param("/instruments_visualizer/manometer_visualizer/min_measure_angle", MIN_MEASURE_ANGLE, (double) 314.0);
+    node_handle.param("/instruments_visualizer/manometer_visualizer/max_measure", MAX_MEASURE, (double) 10.0);
+    node_handle.param("/instruments_visualizer/manometer_visualizer/max_measure_angle", MAX_MEASURE_ANGLE, (double) 39.1);
+    node_handle.param("/instruments_visualizer/manometer_visualizer/analog_meter_detector/border_ratio", amd.border_ratio, (double) 0.8);
+    node_handle.param("/instruments_visualizer/manometer_visualizer/analog_meter_detector/resolution", amd.resolution, (double) 0.1);
+    node_handle.param("/instruments_visualizer/manometer_visualizer/analog_meter_detector/circle_detector/use_gaussian_filter", amd.circle_detector.use_gaussian_filter, true);
+    node_handle.param("/instruments_visualizer/manometer_visualizer/analog_meter_detector/circle_detector/gaussian_kernel_size", amd.circle_detector.gaussian_kernel_size, 5);
+    node_handle.param("/instruments_visualizer/manometer_visualizer/analog_meter_detector/circle_detector/dp", amd.circle_detector.dp, (double) 2.0);
+    node_handle.param("/instruments_visualizer/manometer_visualizer/analog_meter_detector/circle_detector/min_dist_div", amd.circle_detector.min_dist_div, (double)  4.0);
+    node_handle.param("/instruments_visualizer/manometer_visualizer/analog_meter_detector/circle_detector/hough_param1", amd.circle_detector.hough_param1, 200.0);
+    node_handle.param("/instruments_visualizer/manometer_visualizer/analog_meter_detector/circle_detector/hough_param2", amd.circle_detector.hough_param2, 300.0);
+    node_handle.param("/instruments_visualizer/manometer_visualizer/analog_meter_detector/circle_detector/min_radius", amd.circle_detector.min_radius, 0);
+    node_handle.param("/instruments_visualizer/manometer_visualizer/analog_meter_detector/circle_detector/max_radius", amd.circle_detector.max_radius, 0);
 
-    ros::ServiceServer service = nh.advertiseService(manometer_visualizer_service, visualizeManometer);
+    ros::ServiceServer service = node_handle.advertiseService(manometer_visualizer_service, visualizeManometer);
 
     ros::spin();
     return 0;

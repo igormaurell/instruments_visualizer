@@ -1,5 +1,5 @@
 manometer_visualizer:
-  num_reads: 50
+  num_reads: 10
   debug: true
 
   min_measure: 0.0
