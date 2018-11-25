@@ -14,18 +14,16 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package (OpenCV REQUIRED)
 
-find_package (Eigen3 REQUIRED)
-
 add_message_files(
   FILES
-  CircuitState.msg
+  PainelState.msg
   ManometerState.msg
   ValveState.msg
 )
 
 add_service_files(
   FILES
-  VisualizeCircuit.srv
+  VisualizePainel.srv
   VisualizeManometer.srv
   VisualizeValve.srv
 )
@@ -36,46 +34,55 @@ generate_messages(
 )
 
 catkin_package(
+ INCLUDE_DIRS include
  CATKIN_DEPENDS roscpp message_generation std_msgs sensor_msgs cv_bridge
 )
 
 include_directories(
- lib/CvWorks/Core/Vision
- lib/CvWorks/Core/FieldVision
- lib/CvWorks/Components/VisionSensors
- lib/CvWorks/Components/VisionImplementationCv
- lib/CvWorks/Libs/CsvUtil
+ include
  ${catkin_INCLUDE_DIRS}
 )
 
-link_directories(
- lib/CvWorks/Components/VisionSensors
- lib/CvWorks/Components/VisionImplementationCv
+add_library(CircleDetector
+ src/CircleDetector/circle_detector.cpp
+)
+target_link_libraries(CircleDetector
+ ${OpenCV_LIBS}
 )
 
-add_executable(circuit_visualizer_node src/circuit_visualizer_node.cpp)
-target_link_libraries(circuit_visualizer_node
- ${catkin_LIBRARIES}
- VisionSensors
- VisionImplementationCv
+add_library(AnalogMeterDetector
+ src/AnalogMeterDetector/analog_meter_detector.cpp
+)
+target_link_libraries(AnalogMeterDetector
+ CircleDetector
  ${OpenCV_LIBS}
- ${Eigen_LIBS}
+)
+
+add_library(ValveDetector
+ src/ValveDetector/valve_detector.cpp
+)
+target_link_libraries(ValveDetector
+ ${OpenCV_LIBS}
+)
+
+
+add_executable(painel_visualizer_node src/painel_visualizer_node.cpp)
+target_link_libraries(painel_visualizer_node
+ ${catkin_LIBRARIES}
+ ${OpenCV_LIBS}
 )
 
 add_executable(manometer_visualizer_node src/manometer_visualizer_node.cpp)
 target_link_libraries(manometer_visualizer_node
+ CircleDetector
+ AnalogMeterDetector
  ${catkin_LIBRARIES}
- VisionSensors
- VisionImplementationCv
  ${OpenCV_LIBS}
- ${Eigen_LIBS}
 )
 
 add_executable(valve_visualizer_node src/valve_visualizer_node.cpp)
 target_link_libraries(valve_visualizer_node
+ ValveDetector
  ${catkin_LIBRARIES}
- VisionSensors
- VisionImplementationCv
  ${OpenCV_LIBS}
- ${Eigen_LIBS}
 )
