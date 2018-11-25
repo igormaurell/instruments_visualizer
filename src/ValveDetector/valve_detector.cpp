@@ -33,6 +33,11 @@ std::pair<cv::RotatedRect, cv::RotatedRect> ValveDetector::detect(const cv::Mat&
 
     cv::findContours(th1, contours1, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE);
 
+    if(contours1.size() == 0){
+        cv::RotatedRect rect(cv::Point2f(-1, -1), cv::Size2f(0, 0), 0);
+        return std::make_pair(rect, rect);
+    }
+
     std::vector<std::vector<cv::Point> >::iterator it;
 
     for(it = contours1.begin() ; it != contours1.end() ; it++) {
@@ -65,6 +70,11 @@ std::pair<cv::RotatedRect, cv::RotatedRect> ValveDetector::detect(const cv::Mat&
     std::vector<std::vector<cv::Point> > contours2;
     std::vector<cv::Point> contour2;
     cv::findContours(th2, contours2, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
+
+    if(contours2.size() == 0){
+        cv::RotatedRect rect(cv::Point2f(-1, -1), cv::Size2f(0, 0), 0);
+        return std::make_pair(rect, rect);
+    }
 
     std::vector<std::vector<cv::Point> >::iterator jt;
     for(jt = contours2.begin() ; jt != contours2.end() ; jt++) {

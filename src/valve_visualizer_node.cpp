@@ -16,13 +16,13 @@
 
 ValveDetector vd;
 
-std_msgs::Header state_header;
-
 int NUM_READS = 50;
 
 int OPEN_THRESH = 30;
 
 bool DEBUG = true;
+
+int seq;
 
 void readImage(const sensor_msgs::Image::ConstPtr& msg_image, cv::Mat &image)
 {
@@ -41,7 +41,7 @@ bool doStatistics(std::vector<bool> measures)
 
 bool visualizeValve(instruments_visualizer::VisualizeValve::Request &req, instruments_visualizer::VisualizeValve::Response &res)
 {
-    ROS_INFO("Reading valve state...");
+    ROS_INFO("READING VALVE STATE...");
     
     sensor_msgs::Image image_msg;
 
@@ -49,7 +49,7 @@ bool visualizeValve(instruments_visualizer::VisualizeValve::Request &req, instru
 
     bool open;
     std::vector<bool> measures;
-    for(int i = 0 ; ; i++) {
+    for(int i = 0 ; i<NUM_READS ; i++) {
         image_msg = *(ros::topic::waitForMessage<sensor_msgs::Image>("/usb_cam/image_raw", ros::Duration(1))); 
         sensor_msgs::Image::ConstPtr image_const_ptr( new sensor_msgs::Image(image_msg));
         readImage(image_const_ptr, image);
@@ -59,6 +59,12 @@ bool visualizeValve(instruments_visualizer::VisualizeValve::Request &req, instru
 
         cv::RotatedRect rect_bod = rects.first;
         cv::RotatedRect rect_mob = rects.second;
+
+        if((rect_bod.size.width == 0 && rect_bod.size.height == 0) 
+            || (rect_mob.size.width == 0 && rect_mob.size.height == 0)){
+            ROS_ERROR("IMAGE HAS NO VALVE!");
+            continue;
+        }
 
         double angle_mob, angle_bod;
 
@@ -72,7 +78,12 @@ bool visualizeValve(instruments_visualizer::VisualizeValve::Request &req, instru
         else
             angle_bod = rect_bod.angle;
 
-        open = (abs(angle_bod - angle_mob) < OPEN_THRESH);
+        double angle_diff = abs(angle_bod - angle_mob);
+        if(angle_diff > 90.0){
+            angle_diff = 180 - angle_diff;
+        }
+
+        open = (angle_diff < OPEN_THRESH);
 
         ROS_INFO("BODY ANGLE : %lf", angle_bod);
         ROS_INFO("MOBILE ANGLE: %lf", angle_mob);
@@ -90,22 +101,6 @@ bool visualizeValve(instruments_visualizer::VisualizeValve::Request &req, instru
                 cv::line(image, vertices2[i], vertices2[(i+1)%4], cv::Scalar(0,0,255), 2);
             }
 
-            
-            double angle_mob, angle_bod;
-
-            if(rect_mob.size.width < rect_mob.size.height)
-                angle_mob = rect_mob.angle - 90;
-            else
-                angle_mob = rect_mob.angle;
-
-            if(rect_bod.size.width < rect_bod.size.height)
-                angle_bod = rect_bod.angle - 90;
-            else
-                angle_bod = rect_bod.angle;
-
-            ROS_INFO("MOB: %lf", angle_mob);
-            ROS_INFO("BOD: %lf", angle_bod);
-
             cv::imshow("image", image);
             cv::waitKey(30);
         }
@@ -113,6 +108,7 @@ bool visualizeValve(instruments_visualizer::VisualizeValve::Request &req, instru
         measures.push_back(open);
     
     }
+    cv::destroyAllWindows();
 
     if(measures.size() == 0) {
         ROS_ERROR("NO MEASUREMENTS WERE TAKEN!");
@@ -121,9 +117,10 @@ bool visualizeValve(instruments_visualizer::VisualizeValve::Request &req, instru
 
     open = doStatistics(measures);
 
-    state_header.stamp = ros::Time::now();
+    ROS_INFO("STATE: %s", open?"OPEN":"CLOSE");
 
-    res.valve_state.header = state_header;
+    res.valve_state.header.seq = seq++;
+    res.valve_state.header.stamp = ros::Time::now();
     res.valve_state.state = open;
 
     return true;
