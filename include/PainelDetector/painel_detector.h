@@ -1,4 +1,6 @@
+#include <algorithm>
 #include <vector>
+#include <string>
 
 #include <opencv2/opencv.hpp>
 
@@ -7,6 +9,10 @@
 class PainelDetector {
     public:
         PainelDetector();
+
+        int circuits_number;
+
+        std::string upper_state;
 
         std::vector<int> on_color_hs;
         std::vector<int> on_color_thresh;
