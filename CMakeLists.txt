@@ -65,9 +65,19 @@ target_link_libraries(ValveDetector
  ${OpenCV_LIBS}
 )
 
+add_library(PainelDetector
+ src/PainelDetector/painel_detector.cpp
+)
+target_link_libraries(PainelDetector
+ CircleDetector
+ ${OpenCV_LIBS}
+)
+
 
 add_executable(painel_visualizer_node src/painel_visualizer_node.cpp)
 target_link_libraries(painel_visualizer_node
+ CircleDetector
+ PainelDetector
  ${catkin_LIBRARIES}
  ${OpenCV_LIBS}
 )

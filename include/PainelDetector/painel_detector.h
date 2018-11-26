@@ -25,5 +25,6 @@ class PainelDetector {
 
         CircleDetector circle_detector;
 
-        std::vector<bool> detect(const cv::Mat &image);
-}
+        int meanCircleValue(const cv::Mat& image_hsv, const cv::Vec3f& circle);
+        std::pair<std::vector<std::pair<cv::Vec3f, cv::Vec3f> >, std::vector<bool> > detect(const cv::Mat &image);
+};

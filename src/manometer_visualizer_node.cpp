@@ -68,9 +68,11 @@ bool visualizeManometer(instruments_visualizer::VisualizeManometer::Request &req
     std::vector<double> measures;
 
     for(int i = 0 ; i < NUM_READS ; i++) {
-        image_msg = *(ros::topic::waitForMessage<sensor_msgs::Image>(camera_topic, ros::Duration(1))); 
-        sensor_msgs::Image::ConstPtr image_const_ptr( new sensor_msgs::Image(image_msg));
-        readImage(image_const_ptr, image);
+        //image_msg = *(ros::topic::waitForMessage<sensor_msgs::Image>(camera_topic, ros::Duration(1))); 
+        //sensor_msgs::Image::ConstPtr image_const_ptr( new sensor_msgs::Image(image_msg));
+        //readImage(image_const_ptr, image);
+
+        image = cv::imread("/home/igormaurell/Workspace/rcb/catkin_ws/src/instruments_visualizer/images/manocomp.png");
 
         manometers = amd.detect(image);
 
