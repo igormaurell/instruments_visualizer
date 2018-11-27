@@ -18,7 +18,7 @@ ValveDetector vd;
 
 int NUM_READS = 50;
 
-double OPEN_THRESH = 30.0;
+//double OPEN_THRESH = 30.0;
 
 bool DEBUG = true;
 
@@ -49,14 +49,32 @@ bool visualizeValve(instruments_visualizer::VisualizeValve::Request &req, instru
 
     cv::Mat image;
 
+    std::pair<std::vector<cv::Point>, bool> detection;
+    std::vector<std::vector<cv::Point> > contours;
+    std::vector<cv::Point> contour;
     bool open;
     std::vector<bool> measures;
     for(int i = 0 ; i<NUM_READS ; i++) {
-        image_msg = *(ros::topic::waitForMessage<sensor_msgs::Image>(camera_topic, ros::Duration(1))); 
+        /*image_msg = *(ros::topic::waitForMessage<sensor_msgs::Image>(camera_topic, ros::Duration(1))); 
         sensor_msgs::Image::ConstPtr image_const_ptr( new sensor_msgs::Image(image_msg));
-        readImage(image_const_ptr, image);
+        readImage(image_const_ptr, image);*/
 
-        std::pair<cv::RotatedRect, cv::RotatedRect> rects;
+        image = cv::imread("/home/igormaurell/Workspace/rcb/catkin_ws/src/instruments_visualizer/images/valveopencomp.png");
+        cv::Mat img;
+        image.copyTo(img);
+
+        detection = vd.detect(image);
+        contour = detection.first;
+        open = detection.second;
+
+        if(DEBUG) {
+            contours = std::vector<std::vector<cv::Point> >{contour};
+            //cv::drawContours(img, contours, -1, cv::Scalar(0, 0, 255), 3);
+            cv::imshow("VALVE", img);
+            cv::waitKey(30);
+        }
+
+        /*std::pair<cv::RotatedRect, cv::RotatedRect> rects;
         rects = vd.detect(image);
 
         cv::RotatedRect rect_bod = rects.first;
@@ -105,10 +123,9 @@ bool visualizeValve(instruments_visualizer::VisualizeValve::Request &req, instru
 
             cv::imshow("image", image);
             cv::waitKey(30);
-        }
-
+        }*/
+        ROS_INFO("STATE: %s", open?"OPEN":"CLOSE");
         measures.push_back(open);
-    
     }
     cv::destroyAllWindows();
 
@@ -119,7 +136,7 @@ bool visualizeValve(instruments_visualizer::VisualizeValve::Request &req, instru
 
     open = doStatistics(measures);
 
-    ROS_INFO("STATE: %s", open?"OPEN":"CLOSE");
+    ROS_INFO("FINAL STATE: %s", open?"OPEN":"CLOSE");
 
     res.valve_state.header.seq = seq++;
     res.valve_state.header.stamp = ros::Time::now();
@@ -140,12 +157,13 @@ int main(int argc, char **argv)
     node_handle.param("/instruments_visualizer/servers/valve_visualizer/service", valve_visualizer_service, std::string("/instruments_visualizer/visualize_valve"));
     node_handle.param("/instruments_visualizer/valve_visualizer/num_reads", NUM_READS, 50);
     node_handle.param("/instruments_visualizer/valve_visualizer/debug", DEBUG, false);
-    node_handle.param("/instruments_visualizer/valve_visualizer/open_thresh", OPEN_THRESH, (double) 30.0);
-    node_handle.param("/instruments_visualizer/valve_visualizer/valve_detector/mobile_hs", vd.mobile_hs, std::vector<int>{120, 190});
-    node_handle.param("/instruments_visualizer/valve_visualizer/valve_detector/mobile_hs_thresh", vd.mobile_hs_thresh, std::vector<int>{90, 30});
+   // node_handle.param("/instruments_visualizer/valve_visualizer/open_thresh", OPEN_THRESH, (double) 30.0);
+    node_handle.param("/instruments_visualizer/valve_visualizer/valve_detector/extent_thresh", vd.extent_thresh, (double) 0.7);
+   /*node_handle.param("/instruments_visualizer/valve_visualizer/valve_detector/mobile_hs", vd.mobile_hs, std::vector<int>{120, 190});
+    node_handle.param("/instruments_visualizer/valve_visualizer/valve_detector/mobile_hs_thresh", vd.mobile_hs_thresh, std::vector<int>{90, 30});*/
     node_handle.param("/instruments_visualizer/valve_visualizer/valve_detector/use_gaussian_filter", vd.use_gaussian_filter, true);
     node_handle.param("/instruments_visualizer/valve_visualizer/valve_detector/gaussian_kernel_size", vd.gaussian_kernel_size, 5);
-    node_handle.param("/instruments_visualizer/valve_visualizer/valve_detector/opening_kernel_size", vd.opening_kernel_size, 7);
+    node_handle.param("/instruments_visualizer/valve_visualizer/valve_detector/closing_kernel_size", vd.closing_kernel_size, 7);
 
     ros::ServiceServer service = node_handle.advertiseService("/instruments_visualizer/visualize_valve", visualizeValve);
 

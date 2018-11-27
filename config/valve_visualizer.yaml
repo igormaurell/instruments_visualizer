@@ -1,12 +1,10 @@
 valve_visualizer:
   num_reads: 50
   debug: true
-  open_thresh: 30
 
   valve_detector:
-    mobile_hs: [120, 190]
-    mobile_hs_thresh: [90, 30]
+    extent_thresh: 0.7
 
     use_gaussian_filter: true
     gaussian_kernel_size: 5
-    opening_kernel_size: 7
+    closing_kernel_size: 7
