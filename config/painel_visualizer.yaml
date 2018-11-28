@@ -4,13 +4,13 @@ painel_visualizer:
 
   painel_detector:
     circuits_number: 3
-    min_radius: 10.0
-    max_radius: 80.0
-    upper_state: on
-    on_color_hsv: [89, 187, 56]
-    on_color_thresh: [15, 67, 56]
-    off_color_hsv: [23, 212, 106]
-    off_color_thresh: [23, 42, 22]
+    min_radius: 8.0
+    max_radius: 50.0
+    upper_state: false
+    on_color_hsv: [23, 212, 106]
+    on_color_thresh: [23, 42, 22]
+    off_color_hsv: [89, 187, 56]
+    off_color_thresh: [15, 67, 56]
     led_on_v: 237
     led_on_thresh: 17
     closing_kernel_size: 9

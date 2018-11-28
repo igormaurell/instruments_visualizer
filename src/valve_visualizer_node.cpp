@@ -16,7 +16,7 @@
 
 ValveDetector vd;
 
-int NUM_READS = 50;
+int NUM_READS = 10;
 
 //double OPEN_THRESH = 30.0;
 
@@ -55,7 +55,7 @@ bool visualizeValve(instruments_visualizer::VisualizeValve::Request &req, instru
     bool open;
     std::vector<bool> measures;
     for(int i = 0 ; i<NUM_READS ; i++) {
-        image_msg = *(ros::topic::waitForMessage<sensor_msgs::Image>(camera_topic, ros::Duration(1))); 
+        image_msg = *(ros::topic::waitForMessage<sensor_msgs::Image>(camera_topic, ros::Duration(10))); 
         sensor_msgs::Image::ConstPtr image_const_ptr( new sensor_msgs::Image(image_msg));
         readImage(image_const_ptr, image);
 
@@ -102,10 +102,10 @@ int main(int argc, char **argv)
 
     node_handle.param("/instruments_visualizer/subscribers/image_raw/topic", camera_topic, std::string("/usb_cam/image_raw"));
     node_handle.param("/instruments_visualizer/servers/valve_visualizer/service", valve_visualizer_service, std::string("/instruments_visualizer/visualize_valve"));
-    node_handle.param("/instruments_visualizer/valve_visualizer/num_reads", NUM_READS, 50);
+    node_handle.param("/instruments_visualizer/valve_visualizer/num_reads", NUM_READS, 10);
     node_handle.param("/instruments_visualizer/valve_visualizer/debug", DEBUG, false);
    // node_handle.param("/instruments_visualizer/valve_visualizer/open_thresh", OPEN_THRESH, (double) 30.0);
-    node_handle.param("/instruments_visualizer/valve_visualizer/valve_detector/extent_thresh", vd.extent_thresh, (double) 0.7);
+    node_handle.param("/instruments_visualizer/valve_visualizer/valve_detector/extent_thresh", vd.extent_thresh, (double) 0.5);
    /*node_handle.param("/instruments_visualizer/valve_visualizer/valve_detector/mobile_hs", vd.mobile_hs, std::vector<int>{120, 190});
     node_handle.param("/instruments_visualizer/valve_visualizer/valve_detector/mobile_hs_thresh", vd.mobile_hs_thresh, std::vector<int>{90, 30});*/
     node_handle.param("/instruments_visualizer/valve_visualizer/valve_detector/use_gaussian_filter", vd.use_gaussian_filter, true);

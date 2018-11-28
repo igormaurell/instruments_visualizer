@@ -1,7 +1,7 @@
 #include "ValveDetector/valve_detector.h"
 
 ValveDetector::ValveDetector():
-extent_thresh(0.7),
+extent_thresh(0.5),
 use_gaussian_filter(true),
 gaussian_kernel_size(5),
 closing_kernel_size(7)
@@ -12,37 +12,39 @@ closing_kernel_size(7)
 
 std::pair<std::vector<cv::Point>, bool> ValveDetector::detect(const cv::Mat& image)
 {
-    cv::Mat image_gray, image_lab, th2, kernel;
-
-    if(use_gaussian_filter)
-        cv::GaussianBlur(image_gray, image_gray, cv::Size(gaussian_kernel_size, gaussian_kernel_size), 0);
+    cv::Mat image_gray, image_hsv, th2, kernel;
 
     cv::cvtColor(image, image_gray, CV_BGR2GRAY);
-    cv::cvtColor(image, image_lab, CV_BGR2Lab);
 
-    std::vector<int> mobile_lab = std::vector<int>{93, 112, 135};
-    std::vector<int> mobile_lab_thresh = std::vector<int>{38, 36, 13};
+    if(use_gaussian_filter)
+        cv::GaussianBlur(image_gray, image_gray, cv::Size(gaussian_kernel_size, gaussian_kernel_size), 2, 2);
 
-    cv::Scalar min_lab = cv::Scalar(mobile_lab[0] - mobile_lab_thresh[0], mobile_lab[1] - mobile_lab_thresh[1], 0); 
-    cv::Scalar max_lab = cv::Scalar(mobile_lab[0] + mobile_lab_thresh[0], mobile_lab[1] + mobile_lab_thresh[1], 255);
+    /*cv::cvtColor(image, image_hsv, CV_BGR2HSV);
 
-    cv::Mat mask_lab, result_lab, result_gray, th1;
-    cv::inRange(image_lab, min_lab, max_lab, mask_lab);
-    cv::bitwise_and(image_lab, image_lab, result_lab, mask_lab);
+    std::vector<int> mobile_hsv = std::vector<int>{90, 30, 80};
+    std::vector<int> mobile_hsv_thresh = std::vector<int>{90, 30, 50};
+
+    cv::Scalar min_hsv = cv::Scalar(0, 0, mobile_hsv[2] - mobile_hsv_thresh[2]); 
+    cv::Scalar max_hsv = cv::Scalar(180, 255, mobile_hsv[2] + mobile_hsv_thresh[2]);
+
+    cv::Mat mask_hsv, result_hsv, result_gray, th1;
+    cv::inRange(image_hsv, min_hsv, max_hsv, mask_hsv);
+    cv::bitwise_and(image_hsv, image_hsv, result_hsv, mask_hsv);
  
-    cv::cvtColor(result_lab, result_gray, CV_Lab2BGR);
+    cv::cvtColor(result_hsv, result_gray, CV_HSV2BGR);
     cv::cvtColor(result_gray, result_gray, CV_BGR2GRAY);
 
-    cv::threshold(result_gray, th2, 1, 255, CV_THRESH_BINARY);
+    cv::threshold(result_gray, th2, 1, 255, CV_THRESH_BINARY);*/
 
-    //cv::threshold(image_gray, th2, 0, 255, CV_THRESH_OTSU);
-    cv::imshow("sas", th2);
-    cv::waitKey(0);
-
+    cv::threshold(image_gray, th2, 0, 255, CV_THRESH_TRIANGLE);
+   
     cv::bitwise_not(th2, th2);    
 
     kernel = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(closing_kernel_size, closing_kernel_size));
     cv::morphologyEx(th2, th2, cv::MORPH_CLOSE, kernel);
+
+    cv::imshow("sas", th2);
+    cv::waitKey(30);
 
     std::vector<std::vector<cv::Point> > contours;
     std::vector<cv::Point> contour;
@@ -62,10 +64,10 @@ std::pair<std::vector<cv::Point>, bool> ValveDetector::detect(const cv::Mat& ima
     cv::imshow("VALVE", image);
     cv::waitKey(30);
 
-    cv::Rect rec;
+    cv::RotatedRect rec;
     double area = cv::contourArea(contour);
-    rec = cv::boundingRect(contour);
-    double rec_area = rec.width*rec.height;
+    rec = cv::minAreaRect(contour);
+    double rec_area = rec.size.width*rec.size.height;
     double extent = float(area)/rec_area;
 
     return std::make_pair(contour, extent>=extent_thresh);

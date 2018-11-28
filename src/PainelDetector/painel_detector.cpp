@@ -5,14 +5,14 @@
 PainelDetector::PainelDetector():
 circuits_number(3),
 min_radius(10.0),
-max_radius(80.0),
-upper_state("on"),
+max_radius(50.0),
+upper_state(true),
 closing_kernel_size(11)
 {
-    on_color_hsv = std::vector<int>{89, 187, 56};
-    on_color_thresh = std::vector<int>{15, 67, 56};
-    off_color_hsv = std::vector<int>{23, 212, 106};
-    off_color_thresh = std::vector<int>{23, 42, 22};
+    on_color_hsv = std::vector<int>{23, 212, 106};
+    on_color_thresh = std::vector<int>{23, 42, 22};
+    off_color_hsv = std::vector<int>{89, 187, 56};
+    off_color_thresh = std::vector<int>{15, 67, 56};
     led_on_v = 237;
     led_on_thresh = 17;
 }
@@ -112,7 +112,6 @@ void PainelDetector::calculateCircles(const cv::Mat& image, std::vector<cv::Vec3
     if(max_radius==0) return;
 
     while(it != circles.end()) {
-        std::cout<<(*it)[2]<<std::endl;
         if((*it)[2] < min_radius || (*it)[2] > max_radius) {
             it = circles.erase(it);
         }
@@ -222,18 +221,18 @@ std::vector<std::pair<cv::Vec3f, uint8_t> > PainelDetector::detect(const cv::Mat
     else {
         if(line1[0][1] < line2[0][1]){
             for(it = line1.begin() ; it != line1.end() ; it++) {
-                states.push_back(std::make_pair(*it, true));
+                states.push_back(std::make_pair(*it, upper_state));
             }
             for(it = line2.begin() ; it != line2.end() ; it++) {
-                states.push_back(std::make_pair(*it, false));
+                states.push_back(std::make_pair(*it, !upper_state));
             }
         }
         else {
             for(it = line1.begin() ; it != line1.end() ; it++) {
-                states.push_back(std::make_pair(*it, false));
+                states.push_back(std::make_pair(*it, !upper_state));
             }
             for(it = line2.begin() ; it != line2.end() ; it++) {
-                states.push_back(std::make_pair(*it, true));
+                states.push_back(std::make_pair(*it, upper_state));
             }
         }
     }

@@ -15,7 +15,7 @@ class PainelDetector {
         double min_radius;
         double max_radius;
 
-        std::string upper_state;
+        bool upper_state;
 
         std::vector<int> on_color_hsv;
         std::vector<int> on_color_thresh;

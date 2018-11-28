@@ -67,7 +67,7 @@ bool visualizePainel(instruments_visualizer::VisualizePainel::Request &req, inst
     std::vector<uint8_t> measure;
     std::vector<std::pair<cv::Vec3f, uint8_t> >::iterator it;
     for(int i = 0 ; i < NUM_READS ; i++) {
-        image_msg = *(ros::topic::waitForMessage<sensor_msgs::Image>(camera_topic, ros::Duration(1))); 
+        image_msg = *(ros::topic::waitForMessage<sensor_msgs::Image>(camera_topic, ros::Duration(10))); 
         sensor_msgs::Image::ConstPtr image_const_ptr( new sensor_msgs::Image(image_msg));
         readImage(image_const_ptr, image);
 
@@ -121,12 +121,12 @@ int main(int argc, char **argv)
     node_handle.param("/instruments_visualizer/painel_visualizer/debug", DEBUG, true);
     node_handle.param("/instruments_visualizer/painel_visualizer/painel_detector/circuits_number", pd.circuits_number, 3);
     node_handle.param("/instruments_visualizer/painel_visualizer/painel_detector/min_radius", pd.min_radius, 10.0);
-    node_handle.param("/instruments_visualizer/painel_visualizer/painel_detector/max_radius", pd.max_radius, 80.0);
-    node_handle.param("/instruments_visualizer/painel_visualizer/painel_detector/upper_state", pd.upper_state, std::string("on"));
-    node_handle.param("/instruments_visualizer/painel_visualizer/painel_detector/on_color_hsv", pd.on_color_hsv, std::vector<int>{89, 187, 56});
-    node_handle.param("/instruments_visualizer/painel_visualizer/painel_detector/on_color_thresh", pd.on_color_thresh, std::vector<int>{15, 67, 56});
-    node_handle.param("/instruments_visualizer/painel_visualizer/painel_detector/off_color_hsv", pd.off_color_hsv, std::vector<int>{23, 212, 106});
-    node_handle.param("/instruments_visualizer/painel_visualizer/painel_detector/off_color_thresh", pd.off_color_thresh, std::vector<int>{23, 42, 22});
+    node_handle.param("/instruments_visualizer/painel_visualizer/painel_detector/max_radius", pd.max_radius, 50.0);
+    node_handle.param("/instruments_visualizer/painel_visualizer/painel_detector/upper_state", pd.upper_state, false);
+    node_handle.param("/instruments_visualizer/painel_visualizer/painel_detector/on_color_hsv", pd.on_color_hsv, std::vector<int>{23, 212, 106});
+    node_handle.param("/instruments_visualizer/painel_visualizer/painel_detector/on_color_thresh", pd.on_color_thresh, std::vector<int>{23, 42, 22});
+    node_handle.param("/instruments_visualizer/painel_visualizer/painel_detector/off_color_hsv", pd.off_color_hsv, std::vector<int>{89, 187, 56});
+    node_handle.param("/instruments_visualizer/painel_visualizer/painel_detector/off_color_thresh", pd.off_color_thresh, std::vector<int>{15, 67, 56});
     node_handle.param("/instruments_visualizer/painel_visualizer/painel_detector/led_on_v", pd.led_on_v, 237);
     node_handle.param("/instruments_visualizer/painel_visualizer/painel_detector/led_on_thresh", pd.led_on_thresh, 17);
     node_handle.param("/instruments_visualizer/painel_visualizer/painel_detector/closing_kernel_size", pd.closing_kernel_size, 9);

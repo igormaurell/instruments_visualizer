@@ -3,22 +3,21 @@ manometer_visualizer:
   debug: true
 
   min_measure: 0.0
-  min_measure_angle: 305.5
+  min_measure_angle: 315.0
 
   max_measure: 14.0
   max_measure_angle: 45.0
 
   analog_meter_detector:
-    border_ratio: 0.9
-    resolution: 0.01
-
+    border_ratio: 0.83
+    resolution: 0.1
     circle_detector:
       use_gaussian_filter: true
       gaussian_kernel_size: 9
 
       dp: 2.0
       min_dist_div: 8.0
-      hough_param1: 80
-      hough_param2: 150
+      hough_param1: 70
+      hough_param2: 200
       min_radius: 0
       max_radius: 0

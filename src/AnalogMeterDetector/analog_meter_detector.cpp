@@ -58,7 +58,7 @@ std::vector<AnalogMeter> AnalogMeterDetector::detect(const cv::Mat &image)
                 }
             }
 
-            int max_value=-1;
+            float max_value=-1.0;
             int max_index=-1;
             for(unsigned int i=0;i<intensity.size()-1;i++){
                 if(count[i]>5){

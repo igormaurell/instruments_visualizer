@@ -2,7 +2,7 @@
 
 CircleDetector::CircleDetector():
 use_gaussian_filter(true),
-gaussian_kernel_size(5),
+gaussian_kernel_size(9),
 dp(2.0f),
 min_dist_div(4.0f),
 hough_param1(200),
@@ -21,6 +21,11 @@ std::vector<cv::Vec3f> CircleDetector::detect(const cv::Mat &image)
         cv::GaussianBlur(gray, gray, cv::Size(gaussian_kernel_size, gaussian_kernel_size), 2, 2);
     
     std::vector<cv::Vec3f> circles;
+
+    /*cv::Mat detected_edges;
+    cv::Canny( image, detected_edges, hough_param1, hough_param1*2);
+    cv::imshow("sasa", detected_edges);
+    cv::waitKey(30);*/
 
     HoughCircles(gray, circles, cv::HOUGH_GRADIENT, dp,
                 gray.rows/min_dist_div,
