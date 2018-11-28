@@ -68,11 +68,11 @@ bool visualizeManometer(instruments_visualizer::VisualizeManometer::Request &req
     std::vector<double> measures;
 
     for(int i = 0 ; i < NUM_READS ; i++) {
-        //image_msg = *(ros::topic::waitForMessage<sensor_msgs::Image>(camera_topic, ros::Duration(1))); 
-        //sensor_msgs::Image::ConstPtr image_const_ptr( new sensor_msgs::Image(image_msg));
-        //readImage(image_const_ptr, image);
+        image_msg = *(ros::topic::waitForMessage<sensor_msgs::Image>(camera_topic, ros::Duration(1))); 
+        sensor_msgs::Image::ConstPtr image_const_ptr( new sensor_msgs::Image(image_msg));
+        readImage(image_const_ptr, image);
 
-        image = cv::imread("/home/igormaurell/Workspace/rcb/catkin_ws/src/instruments_visualizer/images/manocomp.png");
+        //image = cv::imread("/home/igormaurell/Workspace/rcb/catkin_ws/src/instruments_visualizer/images/manocomp.png");
 
         manometers = amd.detect(image);
 
@@ -135,8 +135,8 @@ int main(int argc, char **argv)
 
     std::string manometer_visualizer_service;
 
-    node_handle.param("/instruments_visualizer/manometer_visualizer/subscribers/image_raw/topic", camera_topic, std::string("/usb_cam/image_raw"));
-    node_handle.param("/instruments_visualizer/manometer_visualizer/servers/manometer_visualizer/service", manometer_visualizer_service, std::string("/instruments_visualizer/visualize_manometer"));
+    node_handle.param("/instruments_visualizer/subscribers/image_raw/topic", camera_topic, std::string("/usb_cam/image_raw"));
+    node_handle.param("/instruments_visualizer/servers/manometer_visualizer/service", manometer_visualizer_service, std::string("/instruments_visualizer/visualize_manometer"));
     node_handle.param("/instruments_visualizer/manometer_visualizer/num_reads", NUM_READS, 50);
     node_handle.param("/instruments_visualizer/manometer_visualizer/debug", DEBUG, false);
     node_handle.param("/instruments_visualizer/manometer_visualizer/min_measure", MIN_MEASURE, (double) 0.0);

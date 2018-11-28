@@ -1,2 +1,2 @@
 Header header
-bool[] circuits_state
+bool[] state

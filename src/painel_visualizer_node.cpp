@@ -28,15 +28,25 @@ void readImage(const sensor_msgs::Image::ConstPtr& msg_image, cv::Mat &image)
     cv_image->image.copyTo(image);
 }
 
-std::vector<bool> doStatistics(std::vector<std::vector<bool> > measures)
+std::vector<uint8_t> doStatistics(std::vector<std::vector<uint8_t> >& measures)
 {
-    std::vector<bool> measure;
-
-    std::vector<int> on_counter(0, measures[0].size());
-    std::vector<std::vector<bool> >::iterator it;
+    std::vector<uint8_t> measure;
+    
+    std::vector<int> on_counter(measures[0].size(), 0);
+    std::vector<std::vector<uint8_t> >::iterator it;
+    std::vector<uint8_t>::iterator kt;
     std::vector<int>::iterator jt;
-    for(it = measures.begin(), jt = on_counter.begin() ; it != measures.end() ; it++, jt++) {
+    for(it = measures.begin() ; it != measures.end() ; it++) {
+        for(kt = it->begin(), jt = on_counter.begin() ; kt != it->end() ; kt++, jt++){
+            if(*kt) (*jt)++;
+        }
+    }
 
+    for(jt = on_counter.begin() ; jt != on_counter.end() ; jt++){
+        if(*jt >= (measures.size()/2))
+            measure.push_back(true);
+        else 
+            measure.push_back(false);
     }
 
     return measure;
@@ -52,38 +62,32 @@ bool visualizePainel(instruments_visualizer::VisualizePainel::Request &req, inst
 
     cv::Mat image;
 
-    std::pair<std::vector<std::pair<cv::Vec3f, cv::Vec3f> >, std::vector<bool> > detection;
-    std::vector<std::pair<cv::Vec3f, cv::Vec3f> > circuits;
-    std::vector<std::vector<bool> > measures;
-
-    std::vector<std::pair<cv::Vec3f, cv::Vec3f> >::iterator it;
+    std::vector<std::pair<cv::Vec3f, uint8_t> > detection;
+    std::vector<std::vector<uint8_t> > measures;
+    std::vector<uint8_t> measure;
+    std::vector<std::pair<cv::Vec3f, uint8_t> >::iterator it;
     for(int i = 0 ; i < NUM_READS ; i++) {
-        /*image_msg = *(ros::topic::waitForMessage<sensor_msgs::Image>(camera_topic, ros::Duration(1))); 
+        image_msg = *(ros::topic::waitForMessage<sensor_msgs::Image>(camera_topic, ros::Duration(1))); 
         sensor_msgs::Image::ConstPtr image_const_ptr( new sensor_msgs::Image(image_msg));
-        readImage(image_const_ptr, image);*/
-
-        image = cv::imread("/home/igormaurell/Workspace/rcb/catkin_ws/src/instruments_visualizer/images/painel.png");
-
+        readImage(image_const_ptr, image);
 
         detection = pd.detect(image);
 
-        circuits = detection.first;
-        /*if(DEBUG){
+        if(DEBUG){
             int i;
-            for(it = circuits.begin(), i = 0 ; it != circuits.end() ; it++, i++){
-                cv::Vec3f c1, c2;
+            for(it = detection.begin(), i = 0 ; it != detection.end() ; it++, i++){
+                cv::Vec3f c1;
                 c1 = it->first;
-                c2 = it->second;
+                measure.push_back(it->second);
                 cv::circle(image, cv::Point(c1[0], c1[1]), c1[2], cv::Scalar(255, 0, 0), 3);
-                cv::putText(image, std::to_string(i), cv::Point(c1[0], c1[1]), cv::FONT_HERSHEY_SIMPLEX, 2, cv::Scalar(255, 0, 0));
-                cv::circle(image, cv::Point(c2[0], c2[1]), c2[2], cv::Scalar(255, 0, 0), 3);
-                cv::putText(image, std::to_string(i), cv::Point(c2[0], c2[1]), cv::FONT_HERSHEY_SIMPLEX, 2, cv::Scalar(255, 0, 0));
+                cv::putText(image, std::to_string(i), cv::Point(c1[0], c1[1]), cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(255, 0, 0));
             }
             cv::imshow("PAINEL", image);
             cv::waitKey(30);
-        }*/
+        }
 
-        measures.push_back(detection.second);
+        measures.push_back(measure);
+        measure.clear();
     }
 
     if(measures.size() == 0) {
@@ -92,21 +96,13 @@ bool visualizePainel(instruments_visualizer::VisualizePainel::Request &req, inst
     }
 
     cv::destroyAllWindows();
-    /*
-    std::vector<bool> measure;
 
-    //measure = doStatistics(measures);
+    measure = doStatistics(measures);
     
-    ROS_INFO("POINTER FINAL ANGLE: %lf", measure);
 
-    measure = ((measure - MIN_MEASURE_ANGLE)*(MAX_MEASURE))/(MAX_MEASURE_ANGLE-MIN_MEASURE_ANGLE);
-    measure += MIN_MEASURE;
-
-    ROS_INFO("MEASURE: %lf", measure);
-
-    res.manometer_state.header.seq = seq++;
-    res.manometer_state.header.stamp = ros::Time::now();
-    res.manometer_state.state = measure;*/
+    res.painel_state.header.seq = seq++;
+    res.painel_state.header.stamp = ros::Time::now();
+    res.painel_state.state = measure;
 
     return true;
 }
@@ -119,18 +115,21 @@ int main(int argc, char **argv)
 
     std::string painel_visualizer_service;
 
-    node_handle.param("/instruments_visualizer/painel_visualizer/subscribers/image_raw/topic", camera_topic, std::string("/usb_cam/image_raw"));
-    node_handle.param("/instruments_visualizer/painel_visualizer/servers/painel_visualizer/service", painel_visualizer_service, std::string("/instruments_visualizer/visualize_painel"));
-    node_handle.param("/instruments_visualizer/painel_visualizer/num_reads", NUM_READS, 50);
+    node_handle.param("/instruments_visualizer/subscribers/image_raw/topic", camera_topic, std::string("/usb_cam/image_raw"));
+    node_handle.param("/instruments_visualizer/servers/painel_visualizer/service", painel_visualizer_service, std::string("/instruments_visualizer/visualize_painel"));
+    node_handle.param("/instruments_visualizer/painel_visualizer/num_reads", NUM_READS, 10);
     node_handle.param("/instruments_visualizer/painel_visualizer/debug", DEBUG, true);
-    node_handle.param("/instruments_visualizer/painel_visualizer/painel_detector/circle_detector/use_gaussian_filter", pd.circle_detector.use_gaussian_filter, true);
-    node_handle.param("/instruments_visualizer/painel_visualizer/painel_detector/circle_detector/gaussian_kernel_size", pd.circle_detector.gaussian_kernel_size, 5);
-    node_handle.param("/instruments_visualizer/painel_visualizer/painel_detector/circle_detector/dp", pd.circle_detector.dp, (double) 1.0);
-    node_handle.param("/instruments_visualizer/painel_visualizer/painel_detector/circle_detector/min_dist_div", pd.circle_detector.min_dist_div, (double)  8.0);
-    node_handle.param("/instruments_visualizer/painel_visualizer/painel_detector/circle_detector/hough_param1", pd.circle_detector.hough_param1, 200.0);
-    node_handle.param("/instruments_visualizer/painel_visualizer/painel_detector/circle_detector/hough_param2", pd.circle_detector.hough_param2, 100.0);
-    node_handle.param("/instruments_visualizer/painel_visualizer/painel_detector/circle_detector/min_radius", pd.circle_detector.min_radius, 0);
-    node_handle.param("/instruments_visualizer/painel_visualizer/painel_detector/circle_detector/max_radius", pd.circle_detector.max_radius, 0);
+    node_handle.param("/instruments_visualizer/painel_visualizer/painel_detector/circuits_number", pd.circuits_number, 3);
+    node_handle.param("/instruments_visualizer/painel_visualizer/painel_detector/min_radius", pd.min_radius, 10.0);
+    node_handle.param("/instruments_visualizer/painel_visualizer/painel_detector/max_radius", pd.max_radius, 80.0);
+    node_handle.param("/instruments_visualizer/painel_visualizer/painel_detector/upper_state", pd.upper_state, std::string("on"));
+    node_handle.param("/instruments_visualizer/painel_visualizer/painel_detector/on_color_hsv", pd.on_color_hsv, std::vector<int>{89, 187, 56});
+    node_handle.param("/instruments_visualizer/painel_visualizer/painel_detector/on_color_thresh", pd.on_color_thresh, std::vector<int>{15, 67, 56});
+    node_handle.param("/instruments_visualizer/painel_visualizer/painel_detector/off_color_hsv", pd.off_color_hsv, std::vector<int>{23, 212, 106});
+    node_handle.param("/instruments_visualizer/painel_visualizer/painel_detector/off_color_thresh", pd.off_color_thresh, std::vector<int>{23, 42, 22});
+    node_handle.param("/instruments_visualizer/painel_visualizer/painel_detector/led_on_v", pd.led_on_v, 237);
+    node_handle.param("/instruments_visualizer/painel_visualizer/painel_detector/led_on_thresh", pd.led_on_thresh, 17);
+    node_handle.param("/instruments_visualizer/painel_visualizer/painel_detector/closing_kernel_size", pd.closing_kernel_size, 9);
 
     ros::ServiceServer service = node_handle.advertiseService(painel_visualizer_service, visualizePainel);
 

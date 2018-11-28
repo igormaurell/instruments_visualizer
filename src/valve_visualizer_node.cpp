@@ -55,14 +55,11 @@ bool visualizeValve(instruments_visualizer::VisualizeValve::Request &req, instru
     bool open;
     std::vector<bool> measures;
     for(int i = 0 ; i<NUM_READS ; i++) {
-        /*image_msg = *(ros::topic::waitForMessage<sensor_msgs::Image>(camera_topic, ros::Duration(1))); 
+        image_msg = *(ros::topic::waitForMessage<sensor_msgs::Image>(camera_topic, ros::Duration(1))); 
         sensor_msgs::Image::ConstPtr image_const_ptr( new sensor_msgs::Image(image_msg));
-        readImage(image_const_ptr, image);*/
+        readImage(image_const_ptr, image);
 
-        image = cv::imread("/home/igormaurell/Workspace/rcb/catkin_ws/src/instruments_visualizer/images/valveopencomp.png");
-        cv::Mat img;
-        image.copyTo(img);
-
+        //image = cv::imread("/home/igormaurell/Workspace/rcb/catkin_ws/im/v1.jpg");
         detection = vd.detect(image);
         contour = detection.first;
         open = detection.second;
@@ -70,60 +67,10 @@ bool visualizeValve(instruments_visualizer::VisualizeValve::Request &req, instru
         if(DEBUG) {
             contours = std::vector<std::vector<cv::Point> >{contour};
             //cv::drawContours(img, contours, -1, cv::Scalar(0, 0, 255), 3);
-            cv::imshow("VALVE", img);
-            cv::waitKey(30);
+            //cv::imshow("VALVE", image);
+            //cv::waitKey(30);
         }
 
-        /*std::pair<cv::RotatedRect, cv::RotatedRect> rects;
-        rects = vd.detect(image);
-
-        cv::RotatedRect rect_bod = rects.first;
-        cv::RotatedRect rect_mob = rects.second;
-
-        if((rect_bod.size.width == 0 && rect_bod.size.height == 0) 
-            || (rect_mob.size.width == 0 && rect_mob.size.height == 0)){
-            ROS_ERROR("IMAGE HAS NO VALVE!");
-            continue;
-        }
-
-        double angle_mob, angle_bod;
-
-        if(rect_mob.size.width < rect_mob.size.height)
-            angle_mob = rect_mob.angle - 90;
-        else
-            angle_mob = rect_mob.angle;
-
-        if(rect_bod.size.width < rect_bod.size.height)
-            angle_bod = rect_bod.angle - 90;
-        else
-            angle_bod = rect_bod.angle;
-
-        double angle_diff = abs(angle_bod - angle_mob);
-        if(angle_diff > 90.0){
-            angle_diff = 180 - angle_diff;
-        }
-
-        open = (angle_diff < OPEN_THRESH);
-
-        ROS_INFO("BODY ANGLE : %lf", angle_bod);
-        ROS_INFO("MOBILE ANGLE: %lf", angle_mob);
-        ROS_INFO("OPEN: %d", open);
-
-        if(DEBUG){
-            cv::Point2f vertices1[4];
-            rect_mob.points(vertices1);
-            for (int i = 0; i < 4; i++)
-            cv::line(image, vertices1[i], vertices1[(i+1)%4], cv::Scalar(0,255,0), 2);
-
-            cv::Point2f vertices2[4];
-            rect_bod.points(vertices2);
-            for (int i = 0; i < 4; i++){
-                cv::line(image, vertices2[i], vertices2[(i+1)%4], cv::Scalar(0,0,255), 2);
-            }
-
-            cv::imshow("image", image);
-            cv::waitKey(30);
-        }*/
         ROS_INFO("STATE: %s", open?"OPEN":"CLOSE");
         measures.push_back(open);
     }
@@ -170,3 +117,55 @@ int main(int argc, char **argv)
     ros::spin();
     return 0;
 }
+
+//to work with color in mobile part
+/*  std::pair<cv::RotatedRect, cv::RotatedRect> rects;
+rects = vd.detect(image);
+
+cv::RotatedRect rect_bod = rects.first;
+cv::RotatedRect rect_mob = rects.second;
+
+if((rect_bod.size.width == 0 && rect_bod.size.height == 0) 
+    || (rect_mob.size.width == 0 && rect_mob.size.height == 0)){
+    ROS_ERROR("IMAGE HAS NO VALVE!");
+    continue;
+}
+
+double angle_mob, angle_bod;
+
+if(rect_mob.size.width < rect_mob.size.height)
+    angle_mob = rect_mob.angle - 90;
+else
+    angle_mob = rect_mob.angle;
+
+if(rect_bod.size.width < rect_bod.size.height)
+    angle_bod = rect_bod.angle - 90;
+else
+    angle_bod = rect_bod.angle;
+
+double angle_diff = abs(angle_bod - angle_mob);
+if(angle_diff > 90.0){
+    angle_diff = 180 - angle_diff;
+}
+
+open = (angle_diff < OPEN_THRESH);
+
+ROS_INFO("BODY ANGLE : %lf", angle_bod);
+ROS_INFO("MOBILE ANGLE: %lf", angle_mob);
+ROS_INFO("OPEN: %d", open);
+
+if(DEBUG){
+    cv::Point2f vertices1[4];
+    rect_mob.points(vertices1);
+    for (int i = 0; i < 4; i++)
+    cv::line(image, vertices1[i], vertices1[(i+1)%4], cv::Scalar(0,255,0), 2);
+
+    cv::Point2f vertices2[4];
+    rect_bod.points(vertices2);
+    for (int i = 0; i < 4; i++){
+        cv::line(image, vertices2[i], vertices2[(i+1)%4], cv::Scalar(0,0,255), 2);
+    }
+
+    cv::imshow("image", image);
+    cv::waitKey(30);
+}*/

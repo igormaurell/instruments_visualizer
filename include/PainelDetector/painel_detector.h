@@ -12,19 +12,24 @@ class PainelDetector {
 
         int circuits_number;
 
+        double min_radius;
+        double max_radius;
+
         std::string upper_state;
 
-        std::vector<int> on_color_hs;
+        std::vector<int> on_color_hsv;
         std::vector<int> on_color_thresh;
 
-        std::vector<int> off_color_hs;
+        std::vector<int> off_color_hsv;
         std::vector<int> off_color_thresh;
 
         int led_on_v;
         int led_on_thresh;
 
-        CircleDetector circle_detector;
+        int closing_kernel_size;
 
-        int meanCircleValue(const cv::Mat& image_hsv, const cv::Vec3f& circle);
-        std::pair<std::vector<std::pair<cv::Vec3f, cv::Vec3f> >, std::vector<bool> > detect(const cv::Mat &image);
+        //CircleDetector circle_detector;
+
+        void calculateCircles(const cv::Mat& image, std::vector<cv::Vec3f>& circles, std::string type);
+        std::vector<std::pair<cv::Vec3f, uint8_t> >  detect(const cv::Mat &image);
 };

@@ -18,7 +18,7 @@ std::vector<cv::Vec3f> CircleDetector::detect(const cv::Mat &image)
     cv::Mat gray;
     cv::cvtColor(image, gray, cv::COLOR_BGR2GRAY);
     if(use_gaussian_filter)
-        cv::GaussianBlur(gray, gray, cv::Size(gaussian_kernel_size, gaussian_kernel_size), 0);
+        cv::GaussianBlur(gray, gray, cv::Size(gaussian_kernel_size, gaussian_kernel_size), 2, 2);
     
     std::vector<cv::Vec3f> circles;
 

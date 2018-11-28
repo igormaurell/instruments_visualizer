@@ -12,14 +12,32 @@ closing_kernel_size(7)
 
 std::pair<std::vector<cv::Point>, bool> ValveDetector::detect(const cv::Mat& image)
 {
-    cv::Mat image_gray, th2, kernel;
+    cv::Mat image_gray, image_lab, th2, kernel;
 
     if(use_gaussian_filter)
         cv::GaussianBlur(image_gray, image_gray, cv::Size(gaussian_kernel_size, gaussian_kernel_size), 0);
 
     cv::cvtColor(image, image_gray, CV_BGR2GRAY);
+    cv::cvtColor(image, image_lab, CV_BGR2Lab);
 
-    cv::threshold(image_gray, th2, 0, 255, CV_THRESH_OTSU);
+    std::vector<int> mobile_lab = std::vector<int>{93, 112, 135};
+    std::vector<int> mobile_lab_thresh = std::vector<int>{38, 36, 13};
+
+    cv::Scalar min_lab = cv::Scalar(mobile_lab[0] - mobile_lab_thresh[0], mobile_lab[1] - mobile_lab_thresh[1], 0); 
+    cv::Scalar max_lab = cv::Scalar(mobile_lab[0] + mobile_lab_thresh[0], mobile_lab[1] + mobile_lab_thresh[1], 255);
+
+    cv::Mat mask_lab, result_lab, result_gray, th1;
+    cv::inRange(image_lab, min_lab, max_lab, mask_lab);
+    cv::bitwise_and(image_lab, image_lab, result_lab, mask_lab);
+ 
+    cv::cvtColor(result_lab, result_gray, CV_Lab2BGR);
+    cv::cvtColor(result_gray, result_gray, CV_BGR2GRAY);
+
+    cv::threshold(result_gray, th2, 1, 255, CV_THRESH_BINARY);
+
+    //cv::threshold(image_gray, th2, 0, 255, CV_THRESH_OTSU);
+    cv::imshow("sas", th2);
+    cv::waitKey(0);
 
     cv::bitwise_not(th2, th2);    
 
@@ -39,6 +57,10 @@ std::pair<std::vector<cv::Point>, bool> ValveDetector::detect(const cv::Mat& ima
         }
     }
 
+    contours = std::vector<std::vector<cv::Point> >{contour};
+    cv::drawContours(image, contours, -1, cv::Scalar(0, 0, 255), 3);
+    cv::imshow("VALVE", image);
+    cv::waitKey(30);
 
     cv::Rect rec;
     double area = cv::contourArea(contour);
