@@ -1,16 +1,18 @@
 manometer_visualizer:
-  num_reads: 50
+  num_reads: 20
   debug: true
 
-  min_measure: 0.0
-  min_measure_angle: 315.0
+  min_measure_bar: 0.0
+  min_measure_angle: 0.0
+  min_measure_read: 315.0
 
-  max_measure: 14.0
-  max_measure_angle: 45.0
+  max_measure_bar: 14.0
+  max_measure_angle: 270.0
+  max_measure_read: 45.0
 
   analog_meter_detector:
     border_ratio: 0.83
-    resolution: 0.1
+    resolution: 0.5 
     circle_detector:
       use_gaussian_filter: true
       gaussian_kernel_size: 9

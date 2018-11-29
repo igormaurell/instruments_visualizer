@@ -20,6 +20,8 @@ int NUM_READS = 10;
 
 //double OPEN_THRESH = 30.0;
 
+double EXTENT_THRESH = 0.6;
+
 bool DEBUG = true;
 
 std::string camera_topic;
@@ -33,12 +35,17 @@ void readImage(const sensor_msgs::Image::ConstPtr& msg_image, cv::Mat &image)
     cv_image->image.copyTo(image);
 }
 
-bool doStatistics(std::vector<bool> measures)
+bool doStatistics(std::vector<double> measures)
 {
-    int trues = std::count(measures.begin(), measures.end(), true);
-    int falses = std::count(measures.begin(), measures.end(), false);
+    double mean = 0.0;
+    std::vector<double>::iterator it;
+    for(it = measures.begin() ; it != measures.end() ; it++)
+    {
+        mean += *it;
+    }
+    mean /= measures.size();
 
-    return trues>=falses;
+    return mean<EXTENT_THRESH;
 }
 
 bool visualizeValve(instruments_visualizer::VisualizeValve::Request &req, instruments_visualizer::VisualizeValve::Response &res)
@@ -49,11 +56,12 @@ bool visualizeValve(instruments_visualizer::VisualizeValve::Request &req, instru
 
     cv::Mat image;
 
-    std::pair<std::vector<cv::Point>, bool> detection;
+    std::pair<std::vector<cv::Point>, double> detection;
     std::vector<std::vector<cv::Point> > contours;
     std::vector<cv::Point> contour;
     bool open;
-    std::vector<bool> measures;
+    double extent;
+    std::vector<double> measures;
     for(int i = 0 ; i<NUM_READS ; i++) {
         image_msg = *(ros::topic::waitForMessage<sensor_msgs::Image>(camera_topic, ros::Duration(10))); 
         sensor_msgs::Image::ConstPtr image_const_ptr( new sensor_msgs::Image(image_msg));
@@ -62,7 +70,11 @@ bool visualizeValve(instruments_visualizer::VisualizeValve::Request &req, instru
         //image = cv::imread("/home/igormaurell/Workspace/rcb/catkin_ws/im/v1.jpg");
         detection = vd.detect(image);
         contour = detection.first;
-        open = detection.second;
+        if(contour.size() == 0){
+            ROS_ERROR("IMAGE HAS NO VALVE!");
+            continue;
+        }
+        extent = detection.second;
 
         if(DEBUG) {
             contours = std::vector<std::vector<cv::Point> >{contour};
@@ -71,8 +83,8 @@ bool visualizeValve(instruments_visualizer::VisualizeValve::Request &req, instru
             //cv::waitKey(30);
         }
 
-        ROS_INFO("STATE: %s", open?"OPEN":"CLOSE");
-        measures.push_back(open);
+        ROS_INFO("STATE: %lf", extent);
+        measures.push_back(extent);
     }
     cv::destroyAllWindows();
 
@@ -104,12 +116,15 @@ int main(int argc, char **argv)
     node_handle.param("/instruments_visualizer/servers/valve_visualizer/service", valve_visualizer_service, std::string("/instruments_visualizer/visualize_valve"));
     node_handle.param("/instruments_visualizer/valve_visualizer/num_reads", NUM_READS, 10);
     node_handle.param("/instruments_visualizer/valve_visualizer/debug", DEBUG, false);
-   // node_handle.param("/instruments_visualizer/valve_visualizer/open_thresh", OPEN_THRESH, (double) 30.0);
-    node_handle.param("/instruments_visualizer/valve_visualizer/valve_detector/extent_thresh", vd.extent_thresh, (double) 0.5);
-   /*node_handle.param("/instruments_visualizer/valve_visualizer/valve_detector/mobile_hs", vd.mobile_hs, std::vector<int>{120, 190});
-    node_handle.param("/instruments_visualizer/valve_visualizer/valve_detector/mobile_hs_thresh", vd.mobile_hs_thresh, std::vector<int>{90, 30});*/
+    node_handle.param("/instruments_visualizer/valve_visualizer/extent_thresh", EXTENT_THRESH, (double) 0.6);
+    node_handle.param("/instruments_visualizer/valve_visualizer/valve_detector/type", vd.type, std::string("hsv"));
     node_handle.param("/instruments_visualizer/valve_visualizer/valve_detector/use_gaussian_filter", vd.use_gaussian_filter, true);
     node_handle.param("/instruments_visualizer/valve_visualizer/valve_detector/gaussian_kernel_size", vd.gaussian_kernel_size, 5);
+    node_handle.param("/instruments_visualizer/valve_visualizer/valve_detector/min_hsv", vd.min_vec_hsv, std::vector<int>{93, 112, 135});
+    node_handle.param("/instruments_visualizer/valve_visualizer/valve_detector/max_hsv", vd.max_vec_hsv, std::vector<int>{38, 36, 13});
+    node_handle.param("/instruments_visualizer/valve_visualizer/valve_detector/canny_thresh", vd.canny_thresh, 36);
+    node_handle.param("/instruments_visualizer/valve_visualizer/valve_detector/erode_times", vd.erode_times, 1);
+    node_handle.param("/instruments_visualizer/valve_visualizer/valve_detector/dilate_times", vd.dilate_times, 1);
     node_handle.param("/instruments_visualizer/valve_visualizer/valve_detector/closing_kernel_size", vd.closing_kernel_size, 7);
 
     ros::ServiceServer service = node_handle.advertiseService("/instruments_visualizer/visualize_valve", visualizeValve);

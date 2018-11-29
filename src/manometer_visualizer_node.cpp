@@ -22,8 +22,8 @@ int NUM_READS = 50;
 
 bool DEBUG = true;
 
-double MIN_MEASURE = 0.0, MIN_MEASURE_ANGLE = 314.0;
-double MAX_MEASURE = 10.0, MAX_MEASURE_ANGLE = 39.1;
+double MIN_MEASURE_BAR = 0.0, MIN_MEASURE_ANGLE = 0.0, MIN_MEASURE_READ = 315.0;
+double MAX_MEASURE_BAR = 14.0, MAX_MEASURE_ANGLE = 270.0, MAX_MEASURE_READ = 45.0;
 
 std::string camera_topic;
 
@@ -109,20 +109,30 @@ bool visualizeManometer(instruments_visualizer::VisualizeManometer::Request &req
 
     cv::destroyAllWindows();
 
-    double measure;
+    double measure_read, measure_bar, measure_angle;
 
-    measure = doStatistics(measures);
+    measure_read = doStatistics(measures);
     
-    ROS_INFO("POINTER FINAL ANGLE: %lf", measure);
+    ROS_INFO("POINTER FINAL ANGLE READ: %lf", measure_angle);
 
-    measure = ((measure - MIN_MEASURE_ANGLE)*(MAX_MEASURE))/(MAX_MEASURE_ANGLE-MIN_MEASURE_ANGLE);
-    measure += MIN_MEASURE;
+    measure_angle = ((measure_read - MIN_MEASURE_READ)*(MAX_MEASURE_ANGLE))/(MAX_MEASURE_READ-MIN_MEASURE_READ);
+    measure_angle += MIN_MEASURE_ANGLE;
 
-    ROS_INFO("MEASURE: %lf", measure);
+    if(measure_angle > MAX_MEASURE_ANGLE) measure_angle = MAX_MEASURE_ANGLE;
+    if(measure_angle < MIN_MEASURE_ANGLE) measure_angle = MIN_MEASURE_ANGLE;
+
+    measure_bar = ((measure_read - MIN_MEASURE_READ)*(MAX_MEASURE_BAR))/(MAX_MEASURE_READ-MIN_MEASURE_READ);
+    measure_bar += MIN_MEASURE_BAR;
+
+    if(measure_bar > MAX_MEASURE_BAR) measure_bar = MAX_MEASURE_BAR;
+    if(measure_bar < MIN_MEASURE_BAR) measure_bar = MIN_MEASURE_BAR;
+
+    ROS_INFO("MEASURE ANGLE: %lf", measure_angle);
+    ROS_INFO("MEASURE BAR: %lf", measure_bar);
 
     res.manometer_state.header.seq = seq++;
     res.manometer_state.header.stamp = ros::Time::now();
-    res.manometer_state.state = measure;
+    res.manometer_state.state = measure_angle;
 
     return true;
 }
@@ -139,10 +149,12 @@ int main(int argc, char **argv)
     node_handle.param("/instruments_visualizer/servers/manometer_visualizer/service", manometer_visualizer_service, std::string("/instruments_visualizer/visualize_manometer"));
     node_handle.param("/instruments_visualizer/manometer_visualizer/num_reads", NUM_READS, 50);
     node_handle.param("/instruments_visualizer/manometer_visualizer/debug", DEBUG, false);
-    node_handle.param("/instruments_visualizer/manometer_visualizer/min_measure", MIN_MEASURE, (double) 0.0);
-    node_handle.param("/instruments_visualizer/manometer_visualizer/min_measure_angle", MIN_MEASURE_ANGLE, (double) 314.0);
-    node_handle.param("/instruments_visualizer/manometer_visualizer/max_measure", MAX_MEASURE, (double) 10.0);
-    node_handle.param("/instruments_visualizer/manometer_visualizer/max_measure_angle", MAX_MEASURE_ANGLE, (double) 39.1);
+    node_handle.param("/instruments_visualizer/manometer_visualizer/min_measure_bar", MIN_MEASURE_BAR, (double) 0.0);
+    node_handle.param("/instruments_visualizer/manometer_visualizer/min_measure_angle", MIN_MEASURE_ANGLE, (double) 0.0);
+    node_handle.param("/instruments_visualizer/manometer_visualizer/min_measure_read", MIN_MEASURE_READ, (double) 315.0);
+    node_handle.param("/instruments_visualizer/manometer_visualizer/max_measure_bar", MAX_MEASURE_BAR, (double) 14.0);
+    node_handle.param("/instruments_visualizer/manometer_visualizer/max_measure_angle", MAX_MEASURE_ANGLE, (double) 270.0);
+    node_handle.param("/instruments_visualizer/manometer_visualizer/max_measure_read", MAX_MEASURE_READ, (double) 45.0);
     node_handle.param("/instruments_visualizer/manometer_visualizer/analog_meter_detector/border_ratio", amd.border_ratio, (double) 0.8);
     node_handle.param("/instruments_visualizer/manometer_visualizer/analog_meter_detector/resolution", amd.resolution, (double) 0.1);
     node_handle.param("/instruments_visualizer/manometer_visualizer/analog_meter_detector/circle_detector/use_gaussian_filter", amd.circle_detector.use_gaussian_filter, true);

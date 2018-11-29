@@ -1,10 +1,20 @@
 valve_visualizer:
-  num_reads: 10
+  num_reads: 25
   debug: true
+  extent_thresh: 0.1
 
   valve_detector:
-    extent_thresh: 0.5
+    type: canny #hsv, triangle, canny
 
     use_gaussian_filter: true
     gaussian_kernel_size: 9
-    closing_kernel_size: 11
+
+    min_hsv: [0, 0, 60]
+    max_hsv: [180, 60, 130]
+
+    canny_thresh: 50
+    erode_times: 1
+    dilate_times: 1
+
+
+    closing_kernel_size: 7
